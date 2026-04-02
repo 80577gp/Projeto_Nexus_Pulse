@@ -14,10 +14,23 @@ class CanvasIntegrationSerializer(serializers.ModelSerializer):
     """
     Serializer for a user's Canvas OAuth integration.
 
-    Exposes the token fields needed to store and refresh the Canvas connection.
+    Token fields are accepted on write but never exposed in serializer output.
+    The Canvas user identifier is required so the local integration can be
+    linked to the corresponding account in Canvas.
     """
 
-    expires_at = serializers.DateTimeField(source="token_expires_at", required=False)
+    access_token = serializers.CharField(write_only=True)
+    refresh_token = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+    expires_at = serializers.DateTimeField(
+        source="token_expires_at",
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = CanvasIntegration
@@ -32,6 +45,15 @@ class CanvasIntegrationSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
+
+    def validate(self, attrs):
+        """Ensure the Canvas account identifier is always provided."""
+        canvas_user_id = attrs.get("canvas_user_id")
+        if not canvas_user_id:
+            raise serializers.ValidationError(
+                {"canvas_user_id": "This field is required."}
+            )
+        return attrs
 
 
 class CanvasCourseSerializer(serializers.ModelSerializer):
@@ -56,4 +78,3 @@ class CanvasGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CanvasGrade
         fields = "__all__"
-

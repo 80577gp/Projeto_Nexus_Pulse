@@ -7,7 +7,10 @@ chat completion API.
 
 import os
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -61,6 +64,12 @@ class AIGenerateContentView(APIView):
         if not api_key:
             return Response(
                 {"detail": "OPENAI_API_KEY is not configured in the environment."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if OpenAI is None:
+            return Response(
+                {"detail": "The OpenAI Python package is not installed."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

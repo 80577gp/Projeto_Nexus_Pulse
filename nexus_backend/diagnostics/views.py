@@ -29,9 +29,27 @@ class DiagnosticTestViewSet(viewsets.ModelViewSet):
     payload needed to start a diagnostic test.
     """
 
-    queryset = DiagnosticTest.objects.prefetch_related("questions__choices").all()
+    queryset = DiagnosticTest.objects.prefetch_related(
+        "questions__choices",
+        "related_skill__topic__subject",
+    ).all()
     serializer_class = DiagnosticTestSerializer
-    permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        """Allow authenticated users to read tests while restricting writes to admins."""
+        if self.action in ["list", "retrieve", "submit_test"]:
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        """Support filtering tests by subject through the related skill hierarchy."""
+        queryset = super().get_queryset()
+        subject_id = self.request.query_params.get("subject")
+        if subject_id:
+            queryset = queryset.filter(related_skill__topic__subject_id=subject_id)
+        return queryset
 
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def submit_test(self, request):

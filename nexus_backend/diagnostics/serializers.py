@@ -50,6 +50,24 @@ class DiagnosticTestSerializer(serializers.ModelSerializer):
 class StudentAnswerSerializer(serializers.ModelSerializer):
     """Serializer for answers submitted by students during diagnostics."""
 
+    def validate(self, attrs):
+        """Ensure the chosen choice belongs to the selected question."""
+        question = attrs.get("question")
+        chosen_choice = attrs.get("chosen_choice")
+        text_answer = attrs.get("text_answer")
+
+        if not chosen_choice and not text_answer:
+            raise serializers.ValidationError(
+                "Either 'chosen_choice' or 'text_answer' must be provided."
+            )
+
+        if chosen_choice and question and chosen_choice.question_id != question.id:
+            raise serializers.ValidationError(
+                {"chosen_choice": "This choice does not belong to the selected question."}
+            )
+
+        return attrs
+
     class Meta:
         model = StudentAnswer
         fields = ["id", "question", "chosen_choice", "text_answer", "is_correct"]
@@ -63,4 +81,3 @@ class StudentProgressSerializer(serializers.ModelSerializer):
         model = StudentProgress
         fields = ["id", "skill", "mastery_level", "last_evaluated"]
         read_only_fields = ["last_evaluated"]
-

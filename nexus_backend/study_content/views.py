@@ -5,7 +5,7 @@ This module exposes CRUD endpoints for the educational content hierarchy using
 DRF ModelViewSets.
 """
 
-from django_filters.rest_framework import DjangoFilterBackend
+from nexus_backend.filter_backends import DjangoFilterBackend
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
 
@@ -53,6 +53,14 @@ class SubjectViewSet(AdminWriteReadOnlyViewSet):
     serializer_class = SubjectSerializer
     filterset_fields = ["school_year"]
 
+    def get_queryset(self):
+        """Allow filtering by school year even when django-filter is unavailable."""
+        queryset = super().get_queryset()
+        school_year = self.request.query_params.get("school_year")
+        if school_year:
+            queryset = queryset.filter(school_year=school_year)
+        return queryset
+
 
 class TopicViewSet(AdminWriteReadOnlyViewSet):
     """ViewSet for managing topics."""
@@ -60,6 +68,14 @@ class TopicViewSet(AdminWriteReadOnlyViewSet):
     queryset = Topic.objects.select_related("subject", "subject__school_year").all().order_by("name")
     serializer_class = TopicSerializer
     filterset_fields = ["subject"]
+
+    def get_queryset(self):
+        """Allow query-parameter filtering by subject."""
+        queryset = super().get_queryset()
+        subject = self.request.query_params.get("subject")
+        if subject:
+            queryset = queryset.filter(subject=subject)
+        return queryset
 
 
 class SkillViewSet(AdminWriteReadOnlyViewSet):
@@ -72,6 +88,14 @@ class SkillViewSet(AdminWriteReadOnlyViewSet):
     ).all().order_by("name")
     serializer_class = SkillSerializer
     filterset_fields = ["topic"]
+
+    def get_queryset(self):
+        """Allow query-parameter filtering by topic."""
+        queryset = super().get_queryset()
+        topic = self.request.query_params.get("topic")
+        if topic:
+            queryset = queryset.filter(topic=topic)
+        return queryset
 
 
 class ContentViewSet(AdminWriteReadOnlyViewSet):
@@ -86,3 +110,13 @@ class ContentViewSet(AdminWriteReadOnlyViewSet):
     serializer_class = ContentSerializer
     filterset_fields = ["skill", "content_type"]
 
+    def get_queryset(self):
+        """Allow query-parameter filtering by skill and content type."""
+        queryset = super().get_queryset()
+        skill = self.request.query_params.get("skill")
+        content_type = self.request.query_params.get("content_type")
+        if skill:
+            queryset = queryset.filter(skill=skill)
+        if content_type:
+            queryset = queryset.filter(content_type=content_type)
+        return queryset

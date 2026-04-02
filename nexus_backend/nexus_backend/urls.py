@@ -8,6 +8,7 @@ This file defines the root routes for the project, including:
 
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 
 # API routes are grouped under a single `/api/` prefix to keep the project
@@ -15,21 +16,23 @@ from django.urls import include, path
 api_urlpatterns = [
     # Authentication and user-related endpoints.
     path("auth/", include("core_users.urls")),
-
-    # Additional app endpoints can be included here as the project grows.
-    # Uncomment these when the corresponding apps and urls.py files exist.
-    # path("study-content/", include("study_content.urls")),
-    # path("exams/", include("exams.urls")),
-    # path("progress/", include("progress.urls")),
+    path("study-content/", include("study_content.urls")),
+    path("diagnostics/", include("diagnostics.urls")),
+    path("ai/", include("ai_integration.urls")),
+    path("canvas/", include("canvas_integration.urls")),
+    path("pulse-missions/", include("pulse_missions.urls")),
+    path("notifications/", include("notifications.urls")),
 ]
 
 
 # Root URL patterns for the project.
 urlpatterns = [
+    # Redirect the site root to the Django admin for an immediate visual entry point.
+    path("", RedirectView.as_view(pattern_name="admin:index", permanent=False)),
+
     # Django administration panel.
     path("admin/", admin.site.urls),
 
     # Central entry point for all API routes.
     path("api/", include(api_urlpatterns)),
 ]
-

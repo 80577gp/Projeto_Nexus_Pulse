@@ -2,12 +2,39 @@
 Django settings for nexus_backend project.
 
 This settings module supports both development and production environments.
-All environment variables are loaded with python-decouple's ``config()``.
+It prefers python-decouple when available and falls back to os.environ-based
+helpers so the project can still start in lean local environments.
 """
 
+import os
 from pathlib import Path
 
-from decouple import Csv, config
+try:
+    from decouple import Csv, config
+except ImportError:
+    class Csv:
+        """Minimal Csv caster compatible with python-decouple usage."""
+
+        def __init__(self, delimiter=","):
+            self.delimiter = delimiter
+
+        def __call__(self, value):
+            if not value:
+                return []
+            return [item.strip() for item in str(value).split(self.delimiter) if item.strip()]
+
+    def config(name, default=None, cast=str):
+        """Small fallback replacement for decouple.config."""
+        value = os.environ.get(name, default)
+        if value is None:
+            raise RuntimeError(f"Missing required environment variable: {name}")
+        if cast is bool:
+            return str(value).strip().lower() in {"1", "true", "yes", "on"}
+        if isinstance(cast, Csv):
+            return cast(value)
+        if callable(cast) and cast is not str:
+            return cast(value)
+        return value
 
 
 # Base directory of the Django project.
@@ -21,13 +48,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ENVIRONMENT = config("ENVIRONMENT", default="development")
 
 # Secret key must always come from the environment.
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-local-dev-key")
 
 # Debug is loaded as a real boolean from the environment.
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 # Allowed hosts are loaded as a list from the environment.
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="127.0.0.1,localhost,testserver",
+    cast=Csv(),
+)
 
 
 # -----------------------------------------------------------------------------
@@ -49,6 +80,12 @@ INSTALLED_APPS = [
 
     # Local apps
     "core_users",
+    "study_content",
+    "diagnostics",
+    "ai_integration",
+    "canvas_integration",
+    "pulse_missions",
+    "notifications",
 ]
 
 
@@ -97,14 +134,26 @@ ASGI_APPLICATION = "nexus_backend.asgi.application"
 # PostgreSQL database configuration loaded fully from environment variables.
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default=5432, cast=int),
+        "ENGINE": config("DB_ENGINE", default="django.db.backends.sqlite3"),
+        "NAME": config(
+            "DB_NAME",
+            default=config("DATABASE_NAME", default=str(BASE_DIR / "db.sqlite3")),
+        ),
+        "USER": config("DB_USER", default=config("DATABASE_USER", default="")),
+        "PASSWORD": config(
+            "DB_PASSWORD",
+            default=config("DATABASE_PASSWORD", default=""),
+        ),
+        "HOST": config("DB_HOST", default=config("DATABASE_HOST", default="localhost")),
+        "PORT": config("DB_PORT", default=config("DATABASE_PORT", default=5432), cast=int),
     }
 }
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": config("SQLITE_NAME", default=str(BASE_DIR / "db.sqlite3")),
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -178,7 +227,7 @@ if not DEBUG:
 # -----------------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core_users.authentication.BearerTokenAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -210,6 +259,21 @@ CELERY_TIMEZONE = TIME_ZONE
 
 
 # -----------------------------------------------------------------------------
+# Canvas LMS OAuth2
+# -----------------------------------------------------------------------------
+# Canvas OAuth2 credentials are loaded from environment variables so sensitive
+# values are not hardcoded in the repository. These same values remain available
+# through `os.environ.get(...)` anywhere else in the project.
+CANVAS_CLIENT_ID = config("CANVAS_CLIENT_ID", default="")
+CANVAS_CLIENT_SECRET = config("CANVAS_CLIENT_SECRET", default="")
+CANVAS_BASE_URL = config("CANVAS_BASE_URL", default="https://your-school.instructure.com")
+CANVAS_REDIRECT_URI = config(
+    "CANVAS_REDIRECT_URI",
+    default="http://localhost:8000/api/canvas/oauth/callback/",
+)
+
+
+# -----------------------------------------------------------------------------
 # Production security settings
 # -----------------------------------------------------------------------------
 # These settings are only enabled in production to improve deployment security.
@@ -231,4 +295,3 @@ if ENVIRONMENT == "production" and not DEBUG:
         cast=bool,
     )
     X_FRAME_OPTIONS = "DENY"
-

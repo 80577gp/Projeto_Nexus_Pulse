@@ -43,6 +43,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"password_confirm": "Passwords do not match."}
             )
+        if attrs.get("role") == User.ROLE_ADMIN:
+            raise serializers.ValidationError(
+                {"role": "Public registration cannot create admin users."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -99,4 +103,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ["email", "username", "role", "school_year"]
         read_only_fields = ["email", "role"]
-

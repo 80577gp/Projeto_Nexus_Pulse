@@ -14,6 +14,7 @@ from .views import (
     CanvasGradeViewSet,
     CanvasOAuth2CallbackView,
     CanvasOAuth2InitiateView,
+    CanvasSyncDataView,
 )
 
 
@@ -38,9 +39,13 @@ urlpatterns = [
         CanvasOAuth2CallbackView.as_view(),
         name="canvas-oauth-callback",
     ),
+    path(
+        "sync/",
+        CanvasSyncDataView.as_view(),
+        name="canvas-sync-data",
+    ),
 ]
 
 
 # Router-generated routes for synchronized Canvas data.
 urlpatterns += router.urls
-
