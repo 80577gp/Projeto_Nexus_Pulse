@@ -2,19 +2,19 @@ import Link from "next/link";
 
 const pillars = [
   {
-    title: "StudyHub",
+    title: "Base",
     description:
-      "Conecta materias, habilidades e diagnosticos em uma experiencia clara e viva.",
+      "Organiza disciplinas, topicos e habilidades para atacar a raiz da dificuldade.",
   },
   {
-    title: "Pulse Missions",
+    title: "Diagnostico",
     description:
-      "Transforma rotina em movimento com foco semanal, ranking e consistencia real.",
+      "Lê o erro com serenidade e mostra onde a fundacao cognitiva precisa de reforco.",
   },
   {
-    title: "Pathfinder",
+    title: "Expansao",
     description:
-      "Liga o aprendizado presente ao futuro academico e profissional do estudante.",
+      "Transforma dominio de base em progresso para medicina, engenharia e vestibulares de elite.",
   },
 ];
 
@@ -26,15 +26,15 @@ export default function HomePage() {
           <div className="grid gap-0 xl:grid-cols-[1.08fr_0.92fr]">
             <div className="koru-panel-dark koru-radar px-6 py-8 text-text_light sm:px-8 xl:px-12">
               <div className="space-y-8">
-                <p className="koru-kicker text-secondary">KORU</p>
+                <p className="koru-kicker text-secondary">KORU RAIZ</p>
                 <div className="space-y-5">
                   <h1 className="max-w-3xl text-5xl font-semibold leading-[1.05] xl:text-6xl">
-                    Conecte seu potencial. Sinta o ritmo do seu futuro.
+                    A base que te expande.
                   </h1>
                   <p className="max-w-2xl text-base leading-8 text-text_light/76 xl:text-lg">
-                    O KORU e o ponto central de apoio que conecta
-                    conhecimento, pessoas e oportunidades com dinamismo,
-                    proatividade e inteligencia aplicada.
+                    KORU existe para remover ruido cognitivo e mostrar a origem
+                    real da dificuldade academica. Quando a base se organiza,
+                    o resto deixa de parecer caos.
                   </p>
                 </div>
 
@@ -56,26 +56,26 @@ export default function HomePage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="koru-stat rounded-[1.7rem] p-5">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Conexao
+                      Guia
                     </p>
                     <p className="mt-3 text-sm leading-7 text-text_light/76">
-                      Um elo entre o estudo de hoje e as ambicoes de amanha.
+                      Uma presenca serena que orienta o aluno sem sobrecarrega-lo.
                     </p>
                   </div>
                   <div className="koru-stat rounded-[1.7rem] p-5">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Pulse
+                      Base
                     </p>
                     <p className="mt-3 text-sm leading-7 text-text_light/76">
-                      Um radar ativo que percebe o momento certo de agir.
+                      O progresso comeca nos fundamentos que sustentam o restante.
                     </p>
                   </div>
                   <div className="koru-stat rounded-[1.7rem] p-5">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Futuro
+                      Expansao
                     </p>
                     <p className="mt-3 text-sm leading-7 text-text_light/76">
-                      Mentoria proativa para sucesso academico e profissional.
+                      O crescimento academico acontece como consequencia do dominio.
                     </p>
                   </div>
                 </div>
@@ -86,15 +86,14 @@ export default function HomePage() {
               <div className="space-y-6">
                 <div className="space-y-3">
                   <span className="koru-chip bg-primary/10 text-primary">
-                    Ecossistema KORU
+                    Estrategia RAIZ
                   </span>
                   <h2 className="text-3xl font-semibold text-text_dark">
-                    Um produto com identidade, ritmo e direcao.
+                    Um produto desenhado para clareza, profundidade e calma.
                   </h2>
                   <p className="max-w-2xl text-sm leading-7 text-text_dark/66">
-                    A marca KORU foi desenhada para soar moderna,
-                    inteligente e marcante. Cada interface precisa transmitir
-                    confianca, conexao e impulso.
+                    A interface deve agir como um guia: minima no ruido,
+                    forte na leitura diagnostica e precisa no proximo passo.
                   </p>
                 </div>
 
@@ -126,7 +125,7 @@ export default function HomePage() {
                       Dashboard
                     </p>
                     <h3 className="mt-3 text-xl font-semibold text-text_dark">
-                      Veja o pulso do aluno
+                      Veja a raiz do progresso
                     </h3>
                   </Link>
                   <Link
@@ -137,7 +136,7 @@ export default function HomePage() {
                       Study Hub
                     </p>
                     <h3 className="mt-3 text-xl font-semibold text-text_dark">
-                      Explore o curriculo conectado
+                      Explore a malha de fundamentos
                     </h3>
                   </Link>
                 </div>
@@ -149,4 +148,3 @@ export default function HomePage() {
     </main>
   );
 }
-

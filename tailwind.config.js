@@ -9,23 +9,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Main brand colors
-        primary: "#8A9A5B",
-        secondary: "#1A1A1A",
-        accent: "#FF9800",
-        "koru-sage": "#8A9A5B",
-        "koru-ink": "#1A1A1A",
-
-        // Text colors
-        text_dark: "#333333",
-        text_light: "#F5F5F5",
-
-        // Background colors
-        background_light: "#FFFFFF",
-        background_dark: "#1A1A1A",
+        primary: "var(--raiz-moss)",
+        secondary: "var(--raiz-paper)",
+        accent: "var(--raiz-alert)",
+        surface: "var(--raiz-surface)",
+        ink: "var(--raiz-ink)",
+        text_dark: "var(--raiz-stone)",
+        text_light: "var(--raiz-paper)",
+        background_light: "var(--raiz-surface)",
+        background_dark: "var(--raiz-ink)",
+      },
+      fontFamily: {
+        heading: ["var(--font-heading)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
       },
     },
   },
   plugins: [],
 };
-

@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useMemo } from "react";
+import { createContext, PropsWithChildren, useContext } from "react";
 import { useWindowDimensions } from "react-native";
 
 type ResponsiveContextValue = {
@@ -11,15 +11,11 @@ const ResponsiveContext = createContext<ResponsiveContextValue | null>(null);
 
 export function ResponsiveProvider({ children }: PropsWithChildren) {
   const { width } = useWindowDimensions();
-
-  const value = useMemo(
-    () => ({
-      isDesktop: width > 768,
-      isMobile: width <= 768,
-      width,
-    }),
-    [width]
-  );
+  const value = {
+    isDesktop: width > 768,
+    isMobile: width <= 768,
+    width,
+  };
 
   return (
     <ResponsiveContext.Provider value={value}>

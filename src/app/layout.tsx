@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Montserrat, Open_Sans } from "next/font/google";
+import { Inter, Lora } from "next/font/google";
 
 import "./globals.css";
 
-const montserrat = Montserrat({
+const lora = Lora({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
 });
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
@@ -18,7 +18,7 @@ const openSans = Open_Sans({
 export const metadata: Metadata = {
   title: "KORU",
   description:
-    "Conecte seu potencial. Sinta o ritmo do seu futuro com o KORU.",
+    "KORU RAIZ. A base que te expande.",
 };
 
 export default function RootLayout({
@@ -28,10 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${montserrat.variable} ${openSans.variable}`}>
+      <body className={`${lora.variable} ${inter.variable}`}>
         {children}
       </body>
     </html>
   );
 }
-

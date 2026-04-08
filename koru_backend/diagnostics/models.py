@@ -22,6 +22,15 @@ class DiagnosticTest(models.Model):
         blank=True,
         help_text="Short description explaining the purpose of the test.",
     )
+    version = models.PositiveIntegerField(
+        default=1,
+        help_text="Version number used to preserve diagnostic test evolution.",
+    )
+    bkt_skill_key = models.CharField(
+        max_length=160,
+        blank=True,
+        help_text="Stable identifier consumed by the BKT engine and graph layer.",
+    )
     related_skill = models.ForeignKey(
         Skill,
         on_delete=models.CASCADE,

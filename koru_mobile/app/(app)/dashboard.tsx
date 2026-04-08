@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 
 import { BentoCard } from "@/components/dashboard/bento-card";
+import { OrganicHeatmap } from "@/components/dashboard/organic-heatmap";
 import { SpiralMastery } from "@/components/dashboard/spiral-mastery";
 import { SkeletonCard } from "@/components/feedback/skeleton-card";
 import { useDashboardSnapshot } from "@/hooks/use-dashboard-snapshot";
@@ -15,7 +16,7 @@ export default function DashboardScreen() {
       <View className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 md:py-8">
         <Text className="font-heading text-4xl text-primary">KORU Dashboard</Text>
         <Text className="mt-3 max-w-3xl font-ui text-base leading-7 text-primary/70">
-          A luxury bento command center for mastery, remediation, admissions trajectory, and deep work rhythm.
+          A base que te expande. Mastery, remediation, admissions trajectory, and calm deep work in one surface.
         </Text>
 
         <View className={`mt-8 gap-4 ${isDesktop ? "flex-row" : ""}`}>
@@ -28,6 +29,12 @@ export default function DashboardScreen() {
                 masteredTopics={snapshot.masteredTopics}
                 totalTopics={snapshot.totalTopics}
               />
+            )}
+
+            {loading || !snapshot ? (
+              <SkeletonCard height={280} />
+            ) : (
+              <OrganicHeatmap mastery={snapshot.mastery} />
             )}
           </View>
 

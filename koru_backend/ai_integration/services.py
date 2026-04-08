@@ -7,6 +7,9 @@ import os
 from openai import APIConnectionError, APITimeoutError, InternalServerError, OpenAI, RateLimitError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from core_users.models import AgentActionAudit, KoruUser
+from koru_backend.agent_security import get_ai_context, validate_ai_intent
+
 from .schemas import StudentGapAnalysis
 
 
@@ -20,7 +23,6 @@ TRANSIENT_OPENAI_ERRORS = (
 
 def build_gap_analysis_prompt(
     *,
-    gap_id: str,
     student_failure_summary: str,
     target_skill: str,
     expected_answer: str | None = None,
@@ -35,8 +37,7 @@ def build_gap_analysis_prompt(
     return (
         "You are KORU DeepScan. The student failed. Analyze the error against the "
         "target skill and determine whether the root cause is in a prerequisite skill. "
-        "Return JSON: { gap_id, explanation, recovery_steps }.\n\n"
-        f"gap_id: {gap_id}\n"
+        "Return JSON: { root_cause_id, explanation, priority, recovery_plan }.\n\n"
         f"target_skill: {target_skill}\n"
         f"student_failure_summary: {student_failure_summary}\n"
         f"expected_answer: {expected_answer_block}\n"
@@ -56,9 +57,12 @@ def request_gap_analysis(*, prompt: str) -> StudentGapAnalysis:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not configured in the environment.")
+    if not validate_ai_intent({"prompt": prompt}):
+        raise RuntimeError("Intent validation blocked the AI prompt.")
 
     model = os.environ.get("OPENAI_DEEPSCAN_MODEL", "gpt-4o-2024-08-06")
     client = OpenAI(api_key=api_key)
+    context = get_ai_context()
 
     response = client.responses.parse(
         model=model,
@@ -74,4 +78,21 @@ def request_gap_analysis(*, prompt: str) -> StudentGapAnalysis:
         ],
         text_format=StudentGapAnalysis,
     )
+
+    actor = KoruUser.objects.filter(
+        is_non_human_identity=True,
+        agent_type=KoruUser.AGENT_DEEPSCAN,
+    ).first()
+    if actor:
+        AgentActionAudit.objects.create(
+            actor=actor,
+            action="ai.deepscan.parse",
+            target_resource=f"student:{context.get('student_id') or 'anonymous'}",
+            metadata={
+                "route_name": context.get("route_name"),
+                "request_id": context.get("request_id"),
+                "model": model,
+            },
+        )
+
     return response.output_parsed

@@ -5,6 +5,7 @@
     "scheme": "koru",
     "version": "1.0.0",
     "orientation": "default",
+    "newArchEnabled": true,
     "userInterfaceStyle": "automatic",
     "experiments": {
       "typedRoutes": true

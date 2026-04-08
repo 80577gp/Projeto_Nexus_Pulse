@@ -19,6 +19,25 @@ type Mission = {
   status: string;
 };
 
+const raizSignals = [
+  {
+    title: "DeepScan Alert",
+    subtitle: "Base fragil em funcoes",
+    description:
+      "Os erros recentes sugerem dificuldade anterior em interpretacao algébrica e leitura de enunciado.",
+  },
+  {
+    title: "Tracker universitario",
+    subtitle: "FUVEST Med",
+    description: "Delta estimado: -52 pontos para o alvo atual.",
+  },
+  {
+    title: "Focus Flow",
+    subtitle: "Sessao profunda",
+    description: "Pronto para um bloco de 45 minutos sem ruido cognitivo.",
+  },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -28,8 +47,6 @@ export default function DashboardPage() {
   const [missionsLoading, setMissionsLoading] = useState(true);
   const [error, setError] = useState("");
   const [missionsError, setMissionsError] = useState("");
-  const [canvasConnected, setCanvasConnected] = useState(false);
-  const [canvasChecking, setCanvasChecking] = useState(true);
   const [completingMissionId, setCompletingMissionId] = useState<number | null>(
     null
   );
@@ -112,28 +129,8 @@ export default function DashboardPage() {
       }
     }
 
-    async function checkCanvasConnection() {
-      try {
-        setCanvasChecking(true);
-
-        const response = await fetch(`${apiBaseUrl}/canvas/courses/`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        setCanvasConnected(response.ok);
-      } catch {
-        setCanvasConnected(false);
-      } finally {
-        setCanvasChecking(false);
-      }
-    }
-
     loadDashboardData();
     loadWeeklyMissions();
-    checkCanvasConnection();
   }, [apiBaseUrl, router]);
 
   async function handleCompleteMission(missionId: number) {
@@ -221,11 +218,11 @@ export default function DashboardPage() {
                     <h1 className="max-w-2xl text-4xl font-semibold leading-tight xl:text-5xl">
                       {user
                         ? `Bem-vindo, ${user.username}.`
-                        : "Seu centro de comando academico."}
+                        : "Seu centro de leitura da base academica."}
                     </h1>
                     <p className="max-w-xl text-base leading-8 text-text_light/76">
-                      O KORU monitora seu ritmo, antecipa necessidades e
-                      transforma dados em acoes concretas para sua jornada.
+                      KORU organiza sinais de mastery, lacunas de fundamento e
+                      proximos passos com a calma de um guia sereno.
                     </p>
                   </div>
                 </div>
@@ -255,17 +252,13 @@ export default function DashboardPage() {
                   </div>
                   <div className="koru-stat rounded-[1.7rem] p-5">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Canvas
+                      RAIZ signal
                     </p>
                     <p className="mt-3 text-lg font-semibold text-white">
-                      {canvasChecking
-                        ? "Verificando"
-                        : canvasConnected
-                        ? "Conectado"
-                        : "Desconectado"}
+                      Base em leitura
                     </p>
                     <p className="mt-1 text-sm text-text_light/72">
-                      sincronia com seu ecossistema
+                      diagnostico continuo da fundacao cognitiva
                     </p>
                   </div>
                 </div>
@@ -273,24 +266,20 @@ export default function DashboardPage() {
                 <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
                   <div className="rounded-[1.8rem] border border-white/10 bg-white/6 p-6">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Essencia da marca
+                      Doutrina RAIZ
                     </p>
                     <p className="mt-3 max-w-xl text-lg leading-8 text-text_light/82">
-                      Conecte seu potencial. Sinta o ritmo do seu futuro.
+                      Va direto na base. O resto e consequencia.
                     </p>
                   </div>
                   <div className="rounded-[1.8rem] border border-white/10 bg-white/6 p-6">
                     <p className="text-xs uppercase tracking-[0.22em] text-secondary">
-                      Conexao ativa
+                      Proximo movimento
                     </p>
-                    <a
-                      href={`${apiBaseUrl}/canvas/oauth/initiate/`}
-                      className="koru-primary-button mt-4 px-5 py-3 text-sm font-semibold"
-                    >
-                      {canvasConnected
-                        ? "Reconectar Canvas LMS"
-                        : "Conectar Canvas LMS"}
-                    </a>
+                    <div className="mt-4 rounded-[1.4rem] border border-white/10 bg-black/10 px-4 py-4 text-sm leading-7 text-text_light/78">
+                      DeepScan e BKT devem priorizar a revisao de pre-requisitos
+                      antes de liberar topicos mais complexos.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -308,20 +297,20 @@ export default function DashboardPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-2">
                       <span className="koru-chip bg-primary/10 text-primary">
-                        My Weekly Missions
+                        Weekly Focus
                       </span>
                       <h2 className="text-2xl font-semibold text-text_dark">
                         Missoes da semana
                       </h2>
                       <p className="max-w-lg text-sm leading-7 text-text_dark/66">
-                        Seu pulso semanal traduzido em proximos passos claros.
+                        Ritmo semanal traduzido em passos claros, sem excesso de ruido.
                       </p>
                     </div>
                     <Link
                       href="/pulse/ranking"
                       className="koru-secondary-button px-4 py-2 text-sm font-semibold"
                     >
-                      Ver ranking
+                      Ver progresso
                     </Link>
                   </div>
 
@@ -384,39 +373,19 @@ export default function DashboardPage() {
                 </section>
 
                 <section className="grid gap-4 md:grid-cols-3">
-                  <article className="koru-card rounded-[1.6rem] p-5">
-                    <p className="text-xs uppercase tracking-[0.2em] text-primary">
-                      StudyHub
-                    </p>
-                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
-                      Aprendizado conectado
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
-                      Conteudos, diagnosticos e IA em uma mesma experiencia.
-                    </p>
-                  </article>
-                  <article className="koru-card rounded-[1.6rem] p-5">
-                    <p className="text-xs uppercase tracking-[0.2em] text-secondary">
-                      Pathfinder
-                    </p>
-                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
-                      Direcao clara
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
-                      O futuro deixa de ser abstrato e vira trilha concreta.
-                    </p>
-                  </article>
-                  <article className="koru-card rounded-[1.6rem] p-5">
-                    <p className="text-xs uppercase tracking-[0.2em] text-accent">
-                      Pulse
-                    </p>
-                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
-                      Proatividade real
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
-                      A plataforma age no momento certo com sinais e prioridades.
-                    </p>
-                  </article>
+                  {raizSignals.map((signal) => (
+                    <article key={signal.title} className="koru-card rounded-[1.6rem] p-5">
+                      <p className="text-xs uppercase tracking-[0.2em] text-primary">
+                        {signal.title}
+                      </p>
+                      <h3 className="mt-3 text-lg font-semibold text-text_dark">
+                        {signal.subtitle}
+                      </h3>
+                      <p className="mt-2 text-sm leading-7 text-text_dark/66">
+                        {signal.description}
+                      </p>
+                    </article>
+                  ))}
                 </section>
               </div>
             </div>
@@ -426,4 +395,3 @@ export default function DashboardPage() {
     </main>
   );
 }
-

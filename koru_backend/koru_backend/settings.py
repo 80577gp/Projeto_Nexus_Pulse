@@ -77,6 +77,7 @@ INSTALLED_APPS = [
 
     # Third-party apps
     "corsheaders",
+    "django.contrib.postgres",
     "rest_framework",
     "rest_framework.authtoken",
 
@@ -103,6 +104,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "koru_backend.middleware.AgentSecurityProxy",
 ]
 
 
@@ -219,7 +221,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = config(
         "CORS_ALLOWED_ORIGINS",
-        default="",
+        default="https://app.koru.education",
         cast=Csv(),
     )
 
@@ -297,6 +299,11 @@ KORU_JWT_ACCESS_TTL = timedelta(
 KORU_JWT_REFRESH_TTL = timedelta(
     days=config("KORU_JWT_REFRESH_TTL_DAYS", default=14, cast=int)
 )
+
+PGVECTOR_ENABLED = config("PGVECTOR_ENABLED", default=False, cast=bool)
+NEO4J_BOLT_URL = config("NEO4J_BOLT_URL", default="bolt://localhost:7687")
+NEO4J_USERNAME = config("NEO4J_USERNAME", default="neo4j")
+NEO4J_PASSWORD = config("NEO4J_PASSWORD", default="password")
 
 
 # -----------------------------------------------------------------------------
