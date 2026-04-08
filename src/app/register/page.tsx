@@ -77,182 +77,205 @@ export default function RegisterPage() {
 
       router.push("/login");
     } catch (submitError) {
-      const message =
+      setError(
         submitError instanceof Error
           ? submitError.message
-          : "Ocorreu um erro inesperado no cadastro.";
-      setError(message);
+          : "Ocorreu um erro inesperado no cadastro."
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-primary via-secondary to-accent px-4 py-10 text-text_dark">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center justify-center">
-        <section className="grid w-full overflow-hidden rounded-[2rem] bg-background_light shadow-2xl md:grid-cols-[1.1fr_0.9fr]">
-          <div className="hidden bg-background_dark p-10 text-text_light md:flex md:flex-col md:justify-between">
-            <div>
-              <p className="mb-4 text-sm uppercase tracking-[0.35em] text-secondary">
-                Nexus Pulse
-              </p>
-              <h1 className="max-w-md text-4xl font-semibold leading-tight">
-                Crie sua conta e comece sua jornada de estudo com mais clareza.
-              </h1>
+    <main className="koru-grid min-h-screen px-4 py-8 text-text_dark sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center">
+        <section className="koru-shell grid w-full overflow-hidden rounded-[2.25rem] lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="koru-panel-dark koru-radar hidden px-8 py-10 text-text_light lg:flex lg:flex-col lg:justify-between xl:px-12">
+            <div className="space-y-8">
+              <p className="koru-kicker text-secondary">KORU</p>
+              <div className="space-y-5">
+                <h1 className="max-w-xl text-4xl font-semibold leading-tight xl:text-5xl">
+                  Conecte seu potencial. Sinta o ritmo do seu futuro.
+                </h1>
+                <p className="max-w-lg text-base leading-8 text-text_light/76">
+                  O KORU conecta conhecimento, orientacao e proatividade
+                  em um unico ponto de apoio para a jornada academica e
+                  profissional.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="koru-stat rounded-[1.75rem] p-5">
+                  <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                    Conexao
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-text_light/78">
+                    Materias, IA, mentoria e oportunidades convergem aqui.
+                  </p>
+                </div>
+                <div className="koru-stat rounded-[1.75rem] p-5">
+                  <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                    Pulse
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-text_light/78">
+                    Um radar ativo que acompanha seu ritmo e age na hora certa.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4 text-sm text-text_light/80">
-              <p>
-                Organize seus estudos, acompanhe seu progresso e conecte seu
-                aprendizado em um unico lugar.
+            <div className="rounded-[1.9rem] border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-secondary">
+                Tagline
               </p>
-              <div className="h-px w-full bg-text_light/10" />
-              <p>Cadastro rapido para estudantes e professores.</p>
+              <p className="mt-3 max-w-lg text-lg leading-8 text-text_light/82">
+                Seu mentor proativo para o sucesso academico e profissional.
+              </p>
             </div>
           </div>
 
-          <div className="p-6 sm:p-8 md:p-10">
-            <div className="mx-auto max-w-md">
-              <div className="mb-8">
-                <span className="inline-flex rounded-full bg-secondary/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
-                  Novo cadastro
+          <div className="relative px-6 py-8 sm:px-8 lg:px-10 xl:px-12">
+            <div className="absolute right-8 top-8 hidden h-24 w-24 rounded-full border border-primary/10 bg-[radial-gradient(circle,_rgba(0,188,212,0.18),_transparent_65%)] lg:block" />
+            <div className="relative mx-auto max-w-xl">
+              <div className="mb-8 space-y-4">
+                <span className="koru-chip bg-primary/10 text-primary">
+                  Jornada inicial
                 </span>
-                <h2 className="mt-4 text-3xl font-semibold text-text_dark">
-                  Criar conta
-                </h2>
-                <p className="mt-2 text-sm text-text_dark/70">
-                  Preencha seus dados para acessar a plataforma.
-                </p>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-text_dark sm:text-4xl">
+                    Criar conta
+                  </h2>
+                  <p className="max-w-md text-sm leading-7 text-text_dark/68">
+                    Entre no ecossistema KORU e comece a transformar seu
+                    estudo em movimento continuo.
+                  </p>
+                </div>
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit}>
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-medium text-text_dark"
-                    htmlFor="email"
-                  >
-                    E-mail
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
+                      E-mail
+                    </span>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="koru-input"
+                      placeholder="voce@exemplo.com"
+                    />
                   </label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                    placeholder="voce@exemplo.com"
-                  />
+
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
+                      Nome de usuario
+                    </span>
+                    <input
+                      id="username"
+                      type="text"
+                      value={username}
+                      onChange={(event) => setUsername(event.target.value)}
+                      className="koru-input"
+                      placeholder="seu_usuario"
+                    />
+                  </label>
                 </div>
 
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-medium text-text_dark"
-                    htmlFor="username"
-                  >
-                    Nome de usuario
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                    placeholder="seu_usuario"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-medium text-text_dark"
-                    htmlFor="role"
-                  >
-                    Perfil
-                  </label>
-                  <select
-                    id="role"
-                    value={role}
-                    onChange={(event) => setRole(event.target.value as Role)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                  >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                  </select>
-                </div>
-
-                {role === "student" && (
-                  <div>
-                    <label
-                      className="mb-2 block text-sm font-medium text-text_dark"
-                      htmlFor="school_year"
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
+                      Perfil
+                    </span>
+                    <select
+                      id="role"
+                      value={role}
+                      onChange={(event) => setRole(event.target.value as Role)}
+                      className="koru-select"
                     >
+                      <option value="student">Student</option>
+                      <option value="teacher">Teacher</option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
                       Ano escolar
-                    </label>
+                    </span>
                     <input
                       id="school_year"
                       type="text"
                       value={schoolYear}
                       onChange={(event) => setSchoolYear(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                      placeholder="Ex: 9o Ano ou 1a Serie EM"
+                      className="koru-input"
+                      placeholder={
+                        role === "student"
+                          ? "Ex: 9o Ano ou 1a Serie EM"
+                          : "Opcional para professores"
+                      }
+                      disabled={role !== "student"}
                     />
-                  </div>
-                )}
-
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-medium text-text_dark"
-                    htmlFor="password"
-                  >
-                    Senha
                   </label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                    placeholder="Minimo de 8 caracteres"
-                  />
                 </div>
 
-                <div>
-                  <label
-                    className="mb-2 block text-sm font-medium text-text_dark"
-                    htmlFor="password_confirm"
-                  >
-                    Confirmar senha
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
+                      Senha
+                    </span>
+                    <input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      className="koru-input"
+                      placeholder="Minimo de 8 caracteres"
+                    />
                   </label>
-                  <input
-                    id="password_confirm"
-                    type="password"
-                    value={passwordConfirm}
-                    onChange={(event) =>
-                      setPasswordConfirm(event.target.value)
-                    }
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15"
-                    placeholder="Repita sua senha"
-                  />
+
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-text_dark">
+                      Confirmar senha
+                    </span>
+                    <input
+                      id="password_confirm"
+                      type="password"
+                      value={passwordConfirm}
+                      onChange={(event) => setPasswordConfirm(event.target.value)}
+                      className="koru-input"
+                      placeholder="Repita sua senha"
+                    />
+                  </label>
                 </div>
 
                 {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-[1.4rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {error}
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex w-full items-center justify-center rounded-2xl bg-text_dark px-4 py-3 text-sm font-semibold text-text_light transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-text_light/40 border-t-text_light" />
-                      Criando conta...
-                    </span>
-                  ) : (
-                    "Criar conta"
-                  )}
-                </button>
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="koru-primary-button w-full px-6 py-3 text-sm font-semibold sm:w-auto sm:min-w-[12rem] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {loading ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+                        Criando conta...
+                      </>
+                    ) : (
+                      "Entrar no KORU"
+                    )}
+                  </button>
+
+                  <p className="text-sm leading-7 text-text_dark/60">
+                    Cadastro para estudantes e professores em uma experiencia
+                    unica e conectada.
+                  </p>
+                </div>
               </form>
             </div>
           </div>

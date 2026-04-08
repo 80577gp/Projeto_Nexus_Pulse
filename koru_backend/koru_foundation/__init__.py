@@ -1,0 +1,1 @@
+"""KORU foundation domain app."""

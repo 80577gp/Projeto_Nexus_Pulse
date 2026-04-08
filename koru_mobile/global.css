@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: 26 26 26;
+  --color-secondary: 138 154 91;
+  --color-surface: 245 245 240;
+  --color-accent: 217 78 78;
+}
+
+[data-theme="dark"] {
+  --color-primary: 245 245 240;
+  --color-secondary: 138 154 91;
+  --color-surface: 20 20 18;
+  --color-accent: 217 78 78;
+}

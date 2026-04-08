@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type UserProfile = {
@@ -50,7 +51,6 @@ export default function DashboardPage() {
         setError("");
 
         const profileResponse = await fetch(`${apiBaseUrl}/auth/profile/`, {
-          method: "GET",
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
@@ -67,12 +67,11 @@ export default function DashboardPage() {
 
         setUser(profileData);
       } catch (loadError) {
-        const message =
+        setError(
           loadError instanceof Error
             ? loadError.message
-            : "Ocorreu um erro inesperado ao carregar o dashboard.";
-
-        setError(message);
+            : "Ocorreu um erro inesperado ao carregar o dashboard."
+        );
         localStorage.removeItem("authToken");
         router.push("/login");
       } finally {
@@ -88,7 +87,6 @@ export default function DashboardPage() {
         const response = await fetch(
           `${apiBaseUrl}/pulse-missions/missions/?status=pending`,
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${authToken}`,
               "Content-Type": "application/json",
@@ -119,7 +117,6 @@ export default function DashboardPage() {
         setCanvasChecking(true);
 
         const response = await fetch(`${apiBaseUrl}/canvas/courses/`, {
-          method: "GET",
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
@@ -202,117 +199,140 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background_dark via-primary to-secondary px-6 text-text_light">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-4 backdrop-blur">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-text_light/30 border-t-text_light" />
-          <span className="text-sm font-medium">Carregando dashboard...</span>
+      <main className="flex min-h-screen items-center justify-center px-6 text-text_dark">
+        <div className="koru-shell flex items-center gap-3 rounded-[1.6rem] px-6 py-4">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
+          <span className="text-sm font-semibold">Carregando dashboard...</span>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,188,212,0.22),_transparent_28%),linear-gradient(135deg,_#f8fbff_0%,_#eef6fb_45%,_#ffffff_100%)] px-4 py-8 text-text_dark sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(42,98,143,0.14)]">
-          <div className="grid gap-0 lg:grid-cols-[1.12fr_0.88fr]">
-            <div className="bg-background_dark px-6 py-8 text-text_light sm:px-8 lg:px-10">
-              <p className="text-xs uppercase tracking-[0.35em] text-secondary">
-                Pulse Dashboard
-              </p>
-              <h1 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
-                {user ? `Bem-vindo, ${user.username}.` : "Bem-vindo de volta."}
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-text_light/75">
-                Seu painel centraliza missoes, progresso e integracoes para
-                transformar estudo em ritmo constante.
-              </p>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                  <p className="text-xs uppercase tracking-[0.25em] text-secondary">
-                    Perfil
-                  </p>
-                  <p className="mt-3 text-sm text-text_light/75">{user?.email}</p>
-                  <p className="mt-1 text-sm text-text_light/75">
-                    Papel: {user?.role || "-"}
-                  </p>
-                  {user?.school_year && (
-                    <p className="mt-1 text-sm text-text_light/75">
-                      Ano escolar: {user.school_year}
+    <main className="koru-grid min-h-screen px-4 py-8 text-text_dark sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <section className="koru-shell overflow-hidden rounded-[2.35rem]">
+          <div className="grid gap-0 xl:grid-cols-[1.05fr_0.95fr]">
+            <div className="koru-panel-dark px-6 py-8 text-text_light sm:px-8 xl:px-12">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <p className="koru-kicker text-secondary">Pulse Dashboard</p>
+                  <div className="space-y-4">
+                    <h1 className="max-w-2xl text-4xl font-semibold leading-tight xl:text-5xl">
+                      {user
+                        ? `Bem-vindo, ${user.username}.`
+                        : "Seu centro de comando academico."}
+                    </h1>
+                    <p className="max-w-xl text-base leading-8 text-text_light/76">
+                      O KORU monitora seu ritmo, antecipa necessidades e
+                      transforma dados em acoes concretas para sua jornada.
                     </p>
-                  )}
+                  </div>
                 </div>
 
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-xs uppercase tracking-[0.25em] text-secondary">
-                      Canvas LMS
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="koru-stat rounded-[1.7rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                      Perfil
                     </p>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        canvasConnected
-                          ? "bg-emerald-400/15 text-emerald-300"
-                          : "bg-amber-400/15 text-amber-300"
-                      }`}
-                    >
-                      {canvasChecking
-                        ? "Checking..."
-                        : canvasConnected
-                        ? "Connected"
-                        : "Not connected"}
-                    </span>
+                    <p className="mt-3 text-lg font-semibold text-white">
+                      {user?.role || "student"}
+                    </p>
+                    <p className="mt-1 text-sm text-text_light/72">
+                      {user?.email}
+                    </p>
                   </div>
+                  <div className="koru-stat rounded-[1.7rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                      Missoes abertas
+                    </p>
+                    <p className="mt-3 text-lg font-semibold text-white">
+                      {missions.length}
+                    </p>
+                    <p className="mt-1 text-sm text-text_light/72">
+                      foco semanal em andamento
+                    </p>
+                  </div>
+                  <div className="koru-stat rounded-[1.7rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                      Canvas
+                    </p>
+                    <p className="mt-3 text-lg font-semibold text-white">
+                      {canvasChecking
+                        ? "Verificando"
+                        : canvasConnected
+                        ? "Conectado"
+                        : "Desconectado"}
+                    </p>
+                    <p className="mt-1 text-sm text-text_light/72">
+                      sincronia com seu ecossistema
+                    </p>
+                  </div>
+                </div>
 
-                  <p className="mt-3 text-sm leading-6 text-text_light/75">
-                    {canvasConnected
-                      ? "Sua conta parece conectada. Sincronize disciplinas, tarefas e notas com o ecossistema Pulse."
-                      : "Conecte sua conta para sincronizar disciplinas, tarefas e notas automaticamente."}
-                  </p>
-
-                  <a
-                    href={`${apiBaseUrl}/canvas/oauth/initiate/`}
-                    className="mt-4 inline-flex rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
-                  >
-                    {canvasConnected
-                      ? "Reconnect Canvas LMS"
-                      : "Connect to Canvas LMS"}
-                  </a>
+                <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-[1.8rem] border border-white/10 bg-white/6 p-6">
+                    <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                      Essencia da marca
+                    </p>
+                    <p className="mt-3 max-w-xl text-lg leading-8 text-text_light/82">
+                      Conecte seu potencial. Sinta o ritmo do seu futuro.
+                    </p>
+                  </div>
+                  <div className="rounded-[1.8rem] border border-white/10 bg-white/6 p-6">
+                    <p className="text-xs uppercase tracking-[0.22em] text-secondary">
+                      Conexao ativa
+                    </p>
+                    <a
+                      href={`${apiBaseUrl}/canvas/oauth/initiate/`}
+                      className="koru-primary-button mt-4 px-5 py-3 text-sm font-semibold"
+                    >
+                      {canvasConnected
+                        ? "Reconectar Canvas LMS"
+                        : "Conectar Canvas LMS"}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-8 sm:px-8 lg:px-10">
-              {error && (
-                <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
+            <div className="px-6 py-8 sm:px-8 xl:px-12">
+              <div className="space-y-6">
+                {error && (
+                  <div className="rounded-[1.45rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                  </div>
+                )}
 
-              <div className="grid gap-6">
-                <section className="rounded-3xl border border-slate-200 bg-background_light p-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-primary">
+                <section className="koru-card rounded-[1.9rem] p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <span className="koru-chip bg-primary/10 text-primary">
                         My Weekly Missions
-                      </p>
-                      <h2 className="mt-2 text-xl font-semibold text-text_dark">
+                      </span>
+                      <h2 className="text-2xl font-semibold text-text_dark">
                         Missoes da semana
                       </h2>
+                      <p className="max-w-lg text-sm leading-7 text-text_dark/66">
+                        Seu pulso semanal traduzido em proximos passos claros.
+                      </p>
                     </div>
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      {missions.length} ativa{missions.length === 1 ? "" : "s"}
-                    </span>
+                    <Link
+                      href="/pulse/ranking"
+                      className="koru-secondary-button px-4 py-2 text-sm font-semibold"
+                    >
+                      Ver ranking
+                    </Link>
                   </div>
 
                   {missionsError && (
-                    <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div className="mt-5 rounded-[1.3rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                       {missionsError}
                     </div>
                   )}
 
                   {missionsLoading ? (
-                    <div className="mt-5 flex items-center gap-3 rounded-3xl bg-slate-50 p-5 text-sm text-text_dark/70">
+                    <div className="mt-5 flex items-center gap-3 rounded-[1.6rem] bg-slate-50 px-4 py-4 text-sm text-text_dark/70">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
                       Carregando missoes semanais...
                     </div>
@@ -321,17 +341,22 @@ export default function DashboardPage() {
                       {missions.map((mission) => (
                         <article
                           key={mission.id}
-                          className="rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:border-primary/30 hover:bg-white"
+                          className="pulse-ring relative rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_16px_32px_rgba(42,98,143,0.06)]"
                         >
-                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0 flex-1">
-                              <h3 className="text-lg font-semibold text-text_dark">
-                                {mission.title}
-                              </h3>
-                              <p className="mt-2 text-sm leading-7 text-text_dark/70">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="space-y-3">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <h3 className="text-lg font-semibold text-text_dark">
+                                  {mission.title}
+                                </h3>
+                                <span className="koru-chip bg-secondary/10 text-secondary">
+                                  {mission.status}
+                                </span>
+                              </div>
+                              <p className="max-w-xl text-sm leading-7 text-text_dark/68">
                                 {mission.description || "Sem descricao disponivel."}
                               </p>
-                              <p className="mt-3 text-xs uppercase tracking-[0.18em] text-primary">
+                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                                 Prazo: {formatDueDate(mission.due_date)}
                               </p>
                             </div>
@@ -340,7 +365,7 @@ export default function DashboardPage() {
                               type="button"
                               onClick={() => handleCompleteMission(mission.id)}
                               disabled={completingMissionId === mission.id}
-                              className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+                              className="koru-primary-button px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
                             >
                               {completingMissionId === mission.id
                                 ? "Concluindo..."
@@ -351,57 +376,47 @@ export default function DashboardPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="mt-5 rounded-3xl bg-slate-50 p-5 text-sm leading-7 text-text_dark/70">
-                      Nenhuma missao pendente foi encontrada agora. Seu Pulse
-                      parece em dia.
+                    <div className="mt-5 rounded-[1.65rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-text_dark/68">
+                      Nenhuma missao pendente foi encontrada agora. Seu ritmo
+                      parece bem calibrado.
                     </div>
                   )}
                 </section>
 
-                <section className="rounded-3xl border border-slate-200 bg-background_light p-6">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-secondary">
-                        Pulse Features
-                      </p>
-                      <h2 className="mt-2 text-xl font-semibold text-text_dark">
-                        Seu ritmo de estudo
-                      </h2>
-                    </div>
-                    <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-medium text-secondary">
-                      Destaques
-                    </span>
-                  </div>
-
-                  <div className="mt-5 grid gap-3">
-                    <div className="rounded-2xl border border-slate-200 p-4">
-                      <p className="text-sm font-medium text-text_dark">
-                        Missoes semanais com foco real
-                      </p>
-                      <p className="mt-1 text-sm text-text_dark/65">
-                        Acompanhe entregas concretas, conclua tarefas e avance com
-                        constancia.
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
-                      <p className="text-sm font-medium text-text_dark">
-                        Integracao com Canvas
-                      </p>
-                      <p className="mt-1 text-sm text-text_dark/65">
-                        Sincronize cursos, tarefas e notas para transformar dados
-                        academicos em acoes.
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
-                      <p className="text-sm font-medium text-text_dark">
-                        Recomendacoes e diagnosticos
-                      </p>
-                      <p className="mt-1 text-sm text-text_dark/65">
-                        Combine diagnosticos, IA e rotinas de estudo em uma
-                        experiencia unica.
-                      </p>
-                    </div>
-                  </div>
+                <section className="grid gap-4 md:grid-cols-3">
+                  <article className="koru-card rounded-[1.6rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-primary">
+                      StudyHub
+                    </p>
+                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
+                      Aprendizado conectado
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
+                      Conteudos, diagnosticos e IA em uma mesma experiencia.
+                    </p>
+                  </article>
+                  <article className="koru-card rounded-[1.6rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-secondary">
+                      Pathfinder
+                    </p>
+                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
+                      Direcao clara
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
+                      O futuro deixa de ser abstrato e vira trilha concreta.
+                    </p>
+                  </article>
+                  <article className="koru-card rounded-[1.6rem] p-5">
+                    <p className="text-xs uppercase tracking-[0.2em] text-accent">
+                      Pulse
+                    </p>
+                    <h3 className="mt-3 text-lg font-semibold text-text_dark">
+                      Proatividade real
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-text_dark/66">
+                      A plataforma age no momento certo com sinais e prioridades.
+                    </p>
+                  </article>
                 </section>
               </div>
             </div>

@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "KORU",
+    "slug": "koru-universal-app",
+    "scheme": "koru",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "splash": {
+      "backgroundColor": "#F5F5F0",
+      "resizeMode": "contain"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F5F5F0",
+          "imageWidth": 180
+        }
+      ]
+    ]
+  }
+}

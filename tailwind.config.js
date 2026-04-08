@@ -10,9 +10,11 @@ module.exports = {
     extend: {
       colors: {
         // Main brand colors
-        primary: "#2A628F",
-        secondary: "#00BCD4",
+        primary: "#8A9A5B",
+        secondary: "#1A1A1A",
         accent: "#FF9800",
+        "koru-sage": "#8A9A5B",
+        "koru-ink": "#1A1A1A",
 
         // Text colors
         text_dark: "#333333",
