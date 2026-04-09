@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/koru-admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="koru-brand">
+  <span class="koru-brand-mark">KORU</span>
+  <span class="koru-brand-separator">|</span>
+  <span class="koru-brand-label">Mastery Control</span>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

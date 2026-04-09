@@ -1,0 +1,138 @@
+:root {
+  --koru-moss-green: #4a5d4e;
+  --koru-paper-cream: #f9f7f2;
+  --koru-stone-gray: #333333;
+  --koru-soft-green: #dfe7de;
+  --koru-border: #d2d8cd;
+  --koru-accent: #738578;
+}
+
+body,
+#container,
+#content,
+.module,
+.inline-group,
+.dashboard #content {
+  background: var(--koru-paper-cream);
+  color: var(--koru-stone-gray);
+}
+
+#header,
+.module caption,
+.inline-group h2 {
+  background: var(--koru-moss-green);
+  color: var(--koru-paper-cream);
+}
+
+#header a:link,
+#header a:visited,
+#user-tools,
+#user-tools a {
+  color: var(--koru-paper-cream);
+}
+
+#site-name,
+#site-name a {
+  color: var(--koru-paper-cream);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.koru-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.koru-brand-mark {
+  font-size: 1.05rem;
+}
+
+.koru-brand-separator,
+.koru-brand-label {
+  opacity: 0.92;
+}
+
+div.breadcrumbs,
+.submit-row,
+.object-tools a:link,
+.object-tools a:visited,
+button,
+input[type="submit"],
+input[type="button"],
+.button,
+a.button {
+  background: var(--koru-moss-green);
+  color: var(--koru-paper-cream);
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: var(--koru-moss-green);
+}
+
+a:link,
+a:visited,
+div.breadcrumbs a,
+.module h2 a,
+.module caption a {
+  color: var(--koru-moss-green);
+}
+
+.selector-chosen h2,
+.selector-available h2,
+table thead th,
+thead th,
+tfoot td {
+  background: var(--koru-soft-green);
+  color: var(--koru-stone-gray);
+}
+
+.module,
+.inline-group,
+#changelist-filter,
+.selector,
+.submit-row,
+.aligned label,
+input,
+textarea,
+select {
+  border-color: var(--koru-border);
+}
+
+input,
+textarea,
+select,
+.vTextField,
+.vLargeTextField {
+  background: #fffdf9;
+  color: var(--koru-stone-gray);
+  border-radius: 8px;
+}
+
+#changelist-filter h2,
+#changelist .actions,
+.paginator,
+.results,
+.help {
+  color: var(--koru-stone-gray);
+}
+
+tr:nth-child(even) {
+  background: rgba(74, 93, 78, 0.04);
+}
+
+tr:hover td,
+tr:hover th {
+  background: rgba(74, 93, 78, 0.08);
+}
+
+.messagelist .success,
+.messagelist .warning,
+.messagelist .error {
+  border-radius: 10px;
+}
+

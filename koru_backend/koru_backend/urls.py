@@ -10,6 +10,10 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+admin.site.site_header = "KORU | Mastery Control"
+admin.site.site_title = "KORU Admin"
+admin.site.index_title = "Sage Console"
+
 
 # API routes are grouped under a single `/api/` prefix to keep the project
 # organized and make versioning or future expansion easier.
