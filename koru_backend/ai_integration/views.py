@@ -1,9 +1,4 @@
-"""
-Views for the ai_integration app.
-
-This module exposes an authenticated endpoint that proxies requests to OpenAI's
-chat completion API.
-"""
+"""Views for the ai_integration app."""
 
 import os
 
@@ -15,6 +10,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from koru_backend.agent_security import get_ai_context, validate_ai_intent
+from .services import build_gap_analysis_prompt, request_gap_analysis
 
 
 class AIGenerateContentView(APIView):
@@ -59,6 +57,11 @@ class AIGenerateContentView(APIView):
                 {"detail": "The 'prompt_text' field is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if not validate_ai_intent(request.data):
+            return Response(
+                {"detail": "Intent validation blocked this request."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
@@ -88,9 +91,15 @@ class AIGenerateContentView(APIView):
 
         try:
             client = OpenAI(api_key=api_key)
+            context = get_ai_context()
             completion = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
+                metadata={
+                    "request_id": context.get("request_id"),
+                    "route_name": context.get("route_name"),
+                    "rag_scope": context.get("rag_scope"),
+                },
             )
         except Exception as exc:
             return Response(
@@ -105,6 +114,7 @@ class AIGenerateContentView(APIView):
                 "request_type": request_type,
                 "prompt_text": prompt_text,
                 "response": ai_response,
+                "rag_scope": get_ai_context().get("rag_scope"),
             },
             status=status.HTTP_200_OK,
         )
@@ -112,3 +122,56 @@ class AIGenerateContentView(APIView):
 
 # Backward-compatible alias in case the older name is referenced elsewhere.
 OpenAIChatProxyView = AIGenerateContentView
+
+
+class DeepScanAnalysisView(APIView):
+    """Authenticated endpoint that returns structured root-cause analysis."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        student_failure_summary = request.data.get("student_failure_summary")
+        target_skill = request.data.get("target_skill")
+        expected_answer = request.data.get("expected_answer")
+        prerequisite_skills = request.data.get("prerequisite_skills") or []
+        additional_context = request.data.get("additional_context")
+
+        if not student_failure_summary or not target_skill:
+            return Response(
+                {
+                    "detail": (
+                        "Both 'student_failure_summary' and 'target_skill' are required."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if prerequisite_skills and not isinstance(prerequisite_skills, list):
+            return Response(
+                {"detail": "'prerequisite_skills' must be a list of strings."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        prompt = build_gap_analysis_prompt(
+            student_failure_summary=student_failure_summary,
+            target_skill=target_skill,
+            expected_answer=expected_answer,
+            prerequisite_skills=[str(item) for item in prerequisite_skills],
+            additional_context=additional_context,
+        )
+
+        try:
+            result = request_gap_analysis(prompt=prompt)
+        except Exception as exc:
+            return Response(
+                {"detail": f"DeepScan request failed: {str(exc)}"},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response(
+            {
+                "analysis": result.model_dump(),
+                "rag_scope": get_ai_context().get("rag_scope"),
+            },
+            status=status.HTTP_200_OK,
+        )

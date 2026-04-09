@@ -40,6 +40,14 @@ def update_student_progress_from_answer(sender, instance, created, **kwargs):
     else:
         subject_accuracy = Decimal(correct_subject_answers) / Decimal(total_subject_answers)
 
+    skill_correct_answers = skill_answers.filter(is_correct=True).count()
+    skill_total_answers = skill_answers.count()
+    if skill_total_answers == 0:
+        historic_difficulty = Decimal("0.50")
+    else:
+        skill_accuracy = Decimal(skill_correct_answers) / Decimal(skill_total_answers)
+        historic_difficulty = Decimal("1.00") - skill_accuracy
+
     mastery = predict_mastery(
         answers=[
             {
@@ -49,6 +57,7 @@ def update_student_progress_from_answer(sender, instance, created, **kwargs):
             for answer in skill_answers
         ],
         subject_accuracy=subject_accuracy,
+        historic_difficulty=historic_difficulty,
     )
 
     StudentProgress.objects.update_or_create(

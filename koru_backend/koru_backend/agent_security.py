@@ -19,8 +19,16 @@ def validate_ai_intent(payload: dict | None) -> bool:
         "reveal system prompt",
         "bypass guardrail",
         "exfiltrate",
+        "override teacher policy",
+        "disable safety",
+        "leak another student",
     ]
     return not any(marker in serialized for marker in blocked_markers)
+
+
+def build_rag_scope(student_id) -> str:
+    """Create a stable per-student RAG isolation scope."""
+    return f"student:{student_id}" if student_id else "student:anonymous"
 
 
 def set_ai_context(*, student_id=None, route_name: str | None = None, request_id: str | None = None):
@@ -30,6 +38,7 @@ def set_ai_context(*, student_id=None, route_name: str | None = None, request_id
             "student_id": student_id,
             "route_name": route_name,
             "request_id": request_id,
+            "rag_scope": build_rag_scope(student_id),
         }
     )
 

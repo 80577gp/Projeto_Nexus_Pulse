@@ -16,16 +16,13 @@ export function SideNav() {
         intensity={55}
         tint="light"
         className="flex-1 px-5 py-6"
-        style={
-          {
-            backgroundColor: "rgba(245,245,240,0.72)",
-            backdropFilter: "blur(22px)",
-          } as never
-        }
+        style={{
+          backgroundColor: "rgba(249,247,242,0.82)",
+        }}
       >
         <View className="rounded-[28px] border border-primary/8 bg-primary px-5 py-6">
-          <Text className="font-heading text-3xl text-surface">KORU</Text>
-          <Text className="mt-2 font-ui text-sm leading-6 text-surface/72">
+          <Text className="font-heading text-3xl text-background">KORU</Text>
+          <Text className="mt-2 font-ui text-sm leading-6 text-background/72">
             Precision guidance for ambitious learners.
           </Text>
         </View>

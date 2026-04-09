@@ -11,9 +11,10 @@ const ResponsiveContext = createContext<ResponsiveContextValue | null>(null);
 
 export function ResponsiveProvider({ children }: PropsWithChildren) {
   const { width } = useWindowDimensions();
+  const desktopBreakpoint = 768;
   const value = {
-    isDesktop: width > 768,
-    isMobile: width <= 768,
+    isDesktop: width > desktopBreakpoint,
+    isMobile: width <= desktopBreakpoint,
     width,
   };
 

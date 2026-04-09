@@ -9,6 +9,8 @@ import hashlib
 
 from django.db import models
 
+from .graph import upsert_skill_node, upsert_topic_node
+
 try:
     from pgvector.django import VectorField as PGVectorField
 except ImportError:
@@ -71,6 +73,10 @@ class Topic(models.Model):
         """Return a descriptive topic label."""
         return f"{self.name} - {self.subject.name}"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        upsert_topic_node(self)
+
 
 class Skill(models.Model):
     """Represents a skill or competency tied to a topic."""
@@ -89,6 +95,10 @@ class Skill(models.Model):
     def __str__(self):
         """Return a descriptive skill label."""
         return f"{self.name} - {self.topic.name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        upsert_skill_node(self)
 
 
 class Content(models.Model):

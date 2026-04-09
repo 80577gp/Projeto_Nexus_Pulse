@@ -80,6 +80,11 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "rest_framework",
     "rest_framework.authtoken",
+    *(
+        ["neomodel"]
+        if importlib.util.find_spec("neomodel")
+        else []
+    ),
 
     # Local apps
     "core_users",
@@ -304,6 +309,10 @@ PGVECTOR_ENABLED = config("PGVECTOR_ENABLED", default=False, cast=bool)
 NEO4J_BOLT_URL = config("NEO4J_BOLT_URL", default="bolt://localhost:7687")
 NEO4J_USERNAME = config("NEO4J_USERNAME", default="neo4j")
 NEO4J_PASSWORD = config("NEO4J_PASSWORD", default="password")
+NEOMODEL_NEO4J_BOLT_URL = config(
+    "NEOMODEL_NEO4J_BOLT_URL",
+    default=f"bolt://{NEO4J_USERNAME}:{NEO4J_PASSWORD}@{NEO4J_BOLT_URL.replace('bolt://', '')}",
+)
 
 
 # -----------------------------------------------------------------------------

@@ -1,6 +1,9 @@
 "use client";
 
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { getAccessToken } from "@/lib/auth/token-store";
+import { webApiClient } from "@/lib/api/client";
 
 type RankingEntry = {
   student?: number;
@@ -22,41 +25,20 @@ export default function PulseRankingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
-
   useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
+    const authToken = getAccessToken();
 
     async function loadRanking() {
       try {
         setLoading(true);
         setError("");
 
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
-
-        if (authToken) {
-          headers.Authorization = `Bearer ${authToken}`;
-        }
-
         const [rankingResponse, profileResponse] = await Promise.all([
-          fetch(`${apiBaseUrl}/pulse-missions/effort-rankings/`, {
-            headers,
-          }),
-          authToken
-            ? fetch(`${apiBaseUrl}/auth/profile/`, {
-                headers,
-              })
-            : Promise.resolve(null),
+          webApiClient.get("/pulse-missions/effort-rankings/"),
+          authToken ? webApiClient.get("/auth/profile/") : Promise.resolve(null),
         ]);
 
-        const rankingPayload = await rankingResponse.json().catch(() => []);
-
-        if (!rankingResponse.ok) {
-          throw new Error("Nao foi possivel carregar o ranking semanal.");
-        }
+        const rankingPayload = rankingResponse.data;
 
         const normalizedRanking = Array.isArray(rankingPayload)
           ? [...rankingPayload].sort(
@@ -67,15 +49,14 @@ export default function PulseRankingPage() {
         setRankingData(normalizedRanking);
 
         if (profileResponse) {
-          const profilePayload = await profileResponse.json().catch(() => null);
-          if (profileResponse.ok) {
-            setCurrentUser(profilePayload);
-          }
+          setCurrentUser(profileResponse.data);
         }
       } catch (loadError) {
         setError(
-          loadError instanceof Error
-            ? loadError.message
+          axios.isAxiosError(loadError)
+            ? loadError.response?.data?.detail || loadError.message
+            : loadError instanceof Error
+              ? loadError.message
             : "Erro inesperado ao carregar o ranking."
         );
       } finally {
@@ -84,7 +65,7 @@ export default function PulseRankingPage() {
     }
 
     loadRanking();
-  }, [apiBaseUrl]);
+  }, []);
 
   function formatScore(score: string | number) {
     return Number(score).toFixed(2);

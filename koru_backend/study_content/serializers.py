@@ -60,7 +60,21 @@ class ContentSerializer(serializers.ModelSerializer):
     Includes all fields, including the related skill foreign key.
     """
 
+    semantic_ready = serializers.SerializerMethodField()
+
+    def get_semantic_ready(self, obj):
+        return bool(obj.semantic_embedding and obj.semantic_source_hash)
+
     class Meta:
         model = Content
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "description",
+            "content_type",
+            "skill",
+            "semantic_embedding",
+            "semantic_source_hash",
+            "semantic_ready",
+        ]
 

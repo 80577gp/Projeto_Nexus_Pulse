@@ -10,7 +10,7 @@ export function BottomTabBar() {
     <SafeAreaView edges={["bottom"]} className="bg-transparent">
       <View className="px-4 pb-4">
         <View
-          className="flex-row items-center justify-around rounded-[28px] border border-primary/8 bg-surface/88 px-3 py-3"
+          className="flex-row items-center justify-around rounded-[28px] border border-primary/8 bg-background/92 px-3 py-3"
           style={{
             shadowColor: "#1A1A1A",
             shadowOpacity: 0.08,

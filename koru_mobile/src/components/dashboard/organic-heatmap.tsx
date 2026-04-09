@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { Text, View } from "react-native";
-import Animated, {
-  Easing,
-  useDerivedValue,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { Easing, useDerivedValue, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 
 const ORGANIC_HEATMAP_SHADER = `
 uniform float2 resolution;
@@ -41,6 +36,7 @@ type OrganicHeatmapProps = {
 
 export function OrganicHeatmap({ mastery }: OrganicHeatmapProps) {
   const animation = useSharedValue(0);
+  const touchPulse = useSharedValue(0);
 
   useEffect(() => {
     animation.value = withRepeat(
@@ -67,8 +63,8 @@ export function OrganicHeatmap({ mastery }: OrganicHeatmapProps) {
 
   const uniforms = useDerivedValue(() => ({
     resolution: skia?.vec ? skia.vec(320, 240) : { x: 320, y: 240 },
-    time: animation.value * Math.PI * 2,
-    mastery,
+    time: (animation.value + touchPulse.value * 0.35) * Math.PI * 2,
+    mastery: Math.max(0, Math.min(1, mastery + touchPulse.value * 0.08)),
   }));
 
   if (!skia || !shaderSource) {
@@ -85,7 +81,15 @@ export function OrganicHeatmap({ mastery }: OrganicHeatmapProps) {
   const { Canvas, Fill, Paint, Rect, Shader } = skia;
 
   return (
-    <View className="overflow-hidden rounded-[28px] border border-secondary/10 bg-surface px-5 py-5">
+    <View
+      className="overflow-hidden rounded-[28px] border border-secondary/10 bg-surface px-5 py-5"
+      onTouchEnd={async () => {
+        touchPulse.value = withTiming(1, { duration: 180 }, () => {
+          touchPulse.value = withTiming(0, { duration: 560 });
+        });
+        await Haptics.selectionAsync().catch(() => null);
+      }}
+    >
       <Text className="font-ui text-[11px] uppercase tracking-[3px] text-secondary">
         Heatmap
       </Text>
@@ -93,7 +97,7 @@ export function OrganicHeatmap({ mastery }: OrganicHeatmapProps) {
         Organic mastery surface
       </Text>
       <Text className="mt-2 font-ui text-sm leading-6 text-primary/70">
-        Areas in red still need water. As mastery grows, the field settles into moss and sage.
+        Areas in red still need water. Touch the field and it responds like paper receiving ink.
       </Text>
 
       <View className="mt-5 h-[240px] overflow-hidden rounded-[24px]">

@@ -6,7 +6,7 @@ This module defines the endpoint used to generate AI-assisted content.
 
 from django.urls import path
 
-from .views import AIGenerateContentView
+from .views import AIGenerateContentView, DeepScanAnalysisView
 
 
 urlpatterns = [
@@ -15,6 +15,11 @@ urlpatterns = [
         "generate-content/",
         AIGenerateContentView.as_view(),
         name="ai-generate-content",
+    ),
+    path(
+        "deepscan/analyze/",
+        DeepScanAnalysisView.as_view(),
+        name="ai-deepscan-analyze",
     ),
 ]
 

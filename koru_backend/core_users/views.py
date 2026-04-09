@@ -5,7 +5,9 @@ This module provides endpoints for user registration, login, token rotation,
 logout, and profile retrieval/update.
 """
 
+from django.db import transaction
 from django.utils import timezone
+from rest_framework import exceptions
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -107,22 +109,45 @@ class TokenRefreshView(APIView):
         serializer.is_valid(raise_exception=True)
 
         payload = decode_token(serializer.validated_data["refresh"], expected_type="refresh")
-        refresh_session = RefreshSession.objects.select_related("user").get(token_jti=payload["jti"])
+        try:
+            with transaction.atomic():
+                refresh_session = (
+                    RefreshSession.objects.select_for_update()
+                    .select_related("user")
+                    .get(token_jti=payload["jti"])
+                )
 
-        if not refresh_session.is_active:
-            return Response(
-                {"detail": "Refresh session is no longer active."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+                if str(refresh_session.family_id) != str(payload.get("family")):
+                    raise exceptions.AuthenticationFailed("Refresh token family mismatch.")
 
-        new_session = RefreshSession.objects.create(
-            user=refresh_session.user,
-            family_id=refresh_session.family_id,
-            expires_at=timezone.now() + get_refresh_expiry(),
-            ip_address=_resolve_client_ip(request),
-            user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
-        )
-        refresh_session.revoke(replaced_by_jti=new_session.token_jti)
+                if refresh_session.revoked_at is not None:
+                    RefreshSession.objects.filter(
+                        family_id=refresh_session.family_id,
+                        revoked_at__isnull=True,
+                    ).update(revoked_at=timezone.now(), updated_at=timezone.now())
+                    return Response(
+                        {"detail": "Refresh token replay detected. Session family revoked."},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+
+                if not refresh_session.is_active:
+                    refresh_session.revoke()
+                    return Response(
+                        {"detail": "Refresh session is no longer active."},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+
+                new_session = RefreshSession.objects.create(
+                    user=refresh_session.user,
+                    family_id=refresh_session.family_id,
+                    expires_at=timezone.now() + get_refresh_expiry(),
+                    ip_address=_resolve_client_ip(request),
+                    user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
+                )
+                refresh_session.revoke(replaced_by_jti=new_session.token_jti)
+        except RefreshSession.DoesNotExist as exc:
+            raise exceptions.AuthenticationFailed("Refresh session not found.") from exc
+
         return Response(_build_token_response(refresh_session.user, new_session), status=status.HTTP_200_OK)
 
 

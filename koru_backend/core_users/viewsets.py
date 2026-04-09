@@ -23,6 +23,37 @@ class KoruIdentityViewSet(ModelViewSet):
             return queryset.filter(is_non_human_identity=False)
         return queryset
 
+    def _emit_audit(self, *, action: str, target: KoruUser):
+        actor = getattr(self.request, "user", None)
+        if not getattr(actor, "is_authenticated", False):
+            return
+
+        metadata = {
+            "http_method": self.request.method,
+            "identity_id": target.pk,
+            "identity_type": "nhi" if target.is_non_human_identity else "human",
+            "agent_type": target.agent_type,
+        }
+
+        AgentActionAudit.objects.create(
+            actor=actor,
+            action=action,
+            target_resource=f"identity:{target.pk}",
+            metadata=metadata,
+        )
+
+    def perform_create(self, serializer):
+        identity = serializer.save()
+        self._emit_audit(action="identity.create", target=identity)
+
+    def perform_update(self, serializer):
+        identity = serializer.save()
+        self._emit_audit(action="identity.update", target=identity)
+
+    def perform_destroy(self, instance):
+        self._emit_audit(action="identity.delete", target=instance)
+        instance.delete()
+
 
 class AgentActionAuditViewSet(ReadOnlyModelViewSet):
     """Inspect immutable audit events emitted by agent identities."""

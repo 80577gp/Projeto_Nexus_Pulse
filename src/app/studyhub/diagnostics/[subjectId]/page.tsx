@@ -1,7 +1,10 @@
 "use client";
 
+import axios from "axios";
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { webApiClient } from "@/lib/api/client";
+import { sanitizeWebInput, sanitizeWebObject } from "@/lib/security/sanitize";
 
 type DiagnosticTest = {
   id: number;
@@ -39,9 +42,6 @@ export default function SubjectDiagnosticPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
 
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
-
   useEffect(() => {
     if (!subjectId) {
       return;
@@ -52,20 +52,18 @@ export default function SubjectDiagnosticPage() {
         setLoadingTests(true);
         setTestsError("");
 
-        const response = await fetch(
-          `${apiBaseUrl}/diagnostics/diagnostic-tests/?subject=${subjectId}`
-        );
-        const data = await response.json().catch(() => []);
-
-        if (!response.ok) {
-          throw new Error("Nao foi possivel carregar os testes diagnosticos.");
-        }
+        const response = await webApiClient.get("/diagnostics/diagnostic-tests/", {
+          params: { subject: subjectId },
+        });
+        const data = response.data;
 
         setDiagnosticTests(Array.isArray(data) ? data : []);
       } catch (loadError) {
         setTestsError(
-          loadError instanceof Error
-            ? loadError.message
+          axios.isAxiosError(loadError)
+            ? loadError.response?.data?.detail || loadError.message
+            : loadError instanceof Error
+              ? loadError.message
             : "Erro inesperado ao carregar os testes."
         );
       } finally {
@@ -74,17 +72,16 @@ export default function SubjectDiagnosticPage() {
     }
 
     loadDiagnosticTests();
-  }, [apiBaseUrl, subjectId]);
+  }, [subjectId]);
 
   async function handleSendPrompt(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const trimmedPrompt = promptText.trim();
+    const trimmedPrompt = sanitizeWebInput(promptText);
     if (!trimmedPrompt) {
       return;
     }
 
-    const authToken = localStorage.getItem("authToken");
     const userMessage: ChatMessage = {
       id: Date.now(),
       role: "user",
@@ -97,25 +94,12 @@ export default function SubjectDiagnosticPage() {
     setAiLoading(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/ai/generate-content/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
-        body: JSON.stringify({
+      const response = await webApiClient.post("/ai/generate-content/", sanitizeWebObject({
           prompt_text: trimmedPrompt,
           request_type: requestType,
-        }),
-      });
+        }));
 
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.detail || "Nao foi possivel obter resposta da IA."
-        );
-      }
+      const data = response.data;
 
       setChatMessages((previous) => [
         ...previous,
@@ -127,8 +111,10 @@ export default function SubjectDiagnosticPage() {
       ]);
     } catch (submitError) {
       setAiError(
-        submitError instanceof Error
-          ? submitError.message
+        axios.isAxiosError(submitError)
+          ? submitError.response?.data?.detail || submitError.message
+          : submitError instanceof Error
+            ? submitError.message
           : "Erro inesperado ao consultar a IA."
       );
     } finally {
@@ -274,10 +260,10 @@ export default function SubjectDiagnosticPage() {
                 </div>
 
                 <section className="koru-card rounded-[1.9rem] p-5">
-                  <div className="h-[30rem] overflow-y-auto rounded-[1.6rem] bg-[linear-gradient(180deg,_rgba(248,251,255,0.9),_rgba(255,255,255,0.98))] p-5 shadow-inset">
+                  <div className="h-[30rem] overflow-y-auto rounded-[1.6rem] bg-[linear-gradient(180deg,_rgba(248,251,255,0.9),_rgba(255,255,255,0.98))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_24px_rgba(74,93,78,0.06)]">
                     {chatMessages.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-center text-sm leading-8 text-text_dark/58">
-                        PeÃ§a um mapa mental, solicite dicas de estudo ou use a IA
+                        Peca um mapa mental, solicite dicas de estudo ou use a IA
                         como mentor instantaneo para esta disciplina.
                       </div>
                     ) : (

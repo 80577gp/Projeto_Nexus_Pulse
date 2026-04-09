@@ -21,6 +21,8 @@ export const metadata: Metadata = {
     "KORU RAIZ. A base que te expande.",
 };
 
+export const experimental_ppr = true;
+
 export default function RootLayout({
   children,
 }: Readonly<{

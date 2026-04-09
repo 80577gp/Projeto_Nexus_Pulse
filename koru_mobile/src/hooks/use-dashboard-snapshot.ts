@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { mobileApiClient } from "@/services/api/mobile-api-client";
+import { useStudyCacheStore } from "@/stores/study-cache-store";
+
 type DashboardSnapshot = {
   mastery: number;
   masteredTopics: number;
@@ -25,28 +28,55 @@ const fallbackSnapshot: DashboardSnapshot = {
 export function useDashboardSnapshot() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
+  const cacheTopics = useStudyCacheStore((state) => state.cacheTopics);
+  const updateMastery = useStudyCacheStore((state) => state.updateMastery);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSnapshot() {
       try {
-        const baseUrl =
-          process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api";
-        const response = await fetch(`${baseUrl}/foundation/universities/`, {
-          headers: {
-            Accept: "application/json",
-          },
+        const [topicsResponse, progressResponse] = await Promise.all([
+          mobileApiClient.get("/foundation/topics/"),
+          mobileApiClient.get("/diagnostics/student-progress/"),
+        ]);
+
+        const topics = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
+        const progressEntries = Array.isArray(progressResponse.data)
+          ? progressResponse.data
+          : [];
+
+        const normalizedTopics = topics.map((topic) => ({
+          id: Number(topic.id),
+          name: String(topic.name),
+          subjectId: Number(topic.subject),
+        }));
+
+        const totalTopics = normalizedTopics.length || fallbackSnapshot.totalTopics;
+        const masteryValues = progressEntries
+          .map((entry) => Number(entry.mastery_level))
+          .filter((value) => Number.isFinite(value));
+        const averageMastery = masteryValues.length
+          ? masteryValues.reduce((sum, value) => sum + value, 0) / masteryValues.length / 100
+          : fallbackSnapshot.mastery;
+        const masteredTopics = progressEntries.length
+          ? masteryValues.filter((value) => value >= 70).length
+          : fallbackSnapshot.masteredTopics;
+
+        progressEntries.forEach((entry) => {
+          if (entry.skill != null && entry.mastery_level != null) {
+            updateMastery(`skill:${entry.skill}`, Number(entry.mastery_level) / 100);
+          }
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard snapshot.");
-        }
-
-        await response.json();
-
         if (!cancelled) {
-          setSnapshot(fallbackSnapshot);
+          cacheTopics(normalizedTopics);
+          setSnapshot({
+            ...fallbackSnapshot,
+            mastery: Number(averageMastery.toFixed(2)),
+            masteredTopics,
+            totalTopics,
+          });
         }
       } catch {
         if (!cancelled) {

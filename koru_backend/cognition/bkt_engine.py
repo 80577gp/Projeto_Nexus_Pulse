@@ -30,6 +30,28 @@ def estimate_subject_difficulty(subject_accuracy: Decimal) -> tuple[Decimal, Dec
     return Decimal("0.25"), Decimal("0.18")
 
 
+def resolve_bkt_parameters(
+    *,
+    subject_accuracy: Decimal,
+    historic_difficulty: Decimal | None = None,
+) -> dict[str, Decimal]:
+    """Derive BKT parameters from the historic difficulty surface of a subject."""
+    guess, slip = estimate_subject_difficulty(subject_accuracy)
+    historic_difficulty = clamp_probability(historic_difficulty or Decimal("0.50"))
+
+    prior = clamp_probability(DEFAULT_PRIOR + ((Decimal("1.00") - historic_difficulty) * Decimal("0.12")))
+    learn = clamp_probability(DEFAULT_LEARN + (historic_difficulty * Decimal("0.08")))
+    adjusted_guess = clamp_probability(guess + (historic_difficulty * Decimal("0.05")))
+    adjusted_slip = clamp_probability(slip + (historic_difficulty * Decimal("0.04")))
+
+    return {
+        "prior": prior,
+        "learn": learn,
+        "guess": adjusted_guess,
+        "slip": adjusted_slip,
+    }
+
+
 def bayesian_update(
     *,
     previous_mastery: Decimal,
@@ -84,17 +106,29 @@ def weighted_mastery(answers: list[dict]) -> Decimal:
     return clamp_probability(weighted_sum / total_weight)
 
 
-def predict_mastery(*, answers: list[dict], subject_accuracy: Decimal) -> Decimal:
+def predict_mastery(
+    *,
+    answers: list[dict],
+    subject_accuracy: Decimal,
+    historic_difficulty: Decimal | None = None,
+) -> Decimal:
     """Predict mastery using pyBKT when available and a deterministic fallback otherwise."""
-    guess, slip = estimate_subject_difficulty(subject_accuracy)
+    parameters = resolve_bkt_parameters(
+        subject_accuracy=subject_accuracy,
+        historic_difficulty=historic_difficulty,
+    )
+    guess = parameters["guess"]
+    slip = parameters["slip"]
+    prior = parameters["prior"]
+    learn = parameters["learn"]
 
     if PyBKTModel is None:
-        mastery = weighted_mastery(answers)
+        mastery = max(weighted_mastery(answers), prior)
         for answer in answers:
             mastery = bayesian_update(
                 previous_mastery=mastery,
                 is_correct=bool(answer["is_correct"]),
-                learn=DEFAULT_LEARN,
+                learn=learn,
                 guess=guess,
                 slip=slip,
             )
@@ -105,12 +139,12 @@ def predict_mastery(*, answers: list[dict], subject_accuracy: Decimal) -> Decima
     model = PyBKTModel(seed=42)
     _ = model  # Placeholder to document the intended primary engine.
 
-    mastery = weighted_mastery(answers)
+    mastery = max(weighted_mastery(answers), prior)
     for answer in answers:
         mastery = bayesian_update(
             previous_mastery=mastery,
             is_correct=bool(answer["is_correct"]),
-            learn=DEFAULT_LEARN,
+            learn=learn,
             guess=guess,
             slip=slip,
         )

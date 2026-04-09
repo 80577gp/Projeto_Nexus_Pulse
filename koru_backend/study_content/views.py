@@ -5,8 +5,11 @@ This module exposes CRUD endpoints for the educational content hierarchy using
 DRF ModelViewSets.
 """
 
+from django.db import models
 from koru_backend.filter_backends import DjangoFilterBackend
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Content, SchoolYear, Skill, Subject, Topic
@@ -115,8 +118,33 @@ class ContentViewSet(AdminWriteReadOnlyViewSet):
         queryset = super().get_queryset()
         skill = self.request.query_params.get("skill")
         content_type = self.request.query_params.get("content_type")
+        semantic_query = self.request.query_params.get("semantic_query")
         if skill:
             queryset = queryset.filter(skill=skill)
         if content_type:
             queryset = queryset.filter(content_type=content_type)
+        if semantic_query:
+            queryset = queryset.filter(
+                models.Q(title__icontains=semantic_query)
+                | models.Q(description__icontains=semantic_query)
+            )
         return queryset
+
+    @action(detail=False, methods=["get"])
+    def semantic_search(self, request):
+        """Fallback semantic retrieval surface for RAG orchestration."""
+        query = request.query_params.get("q", "").strip()
+        if not query:
+            return Response({"detail": "The 'q' parameter is required."}, status=400)
+
+        queryset = self.get_queryset().filter(
+            models.Q(title__icontains=query) | models.Q(description__icontains=query)
+        )[:8]
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "query": query,
+                "results": serializer.data,
+                "mode": "pgvector-ready-fallback",
+            }
+        )

@@ -14,6 +14,9 @@ module.exports = {
         accent: "var(--raiz-alert)",
         surface: "var(--raiz-surface)",
         ink: "var(--raiz-ink)",
+        moss: "#4A5D4E",
+        paper: "#F9F7F2",
+        stone: "#333333",
         text_dark: "var(--raiz-stone)",
         text_light: "var(--raiz-paper)",
         background_light: "var(--raiz-surface)",
@@ -22,6 +25,7 @@ module.exports = {
       fontFamily: {
         heading: ["var(--font-heading)", "serif"],
         body: ["var(--font-body)", "sans-serif"],
+        ui: ["var(--font-body)", "sans-serif"],
       },
     },
   },

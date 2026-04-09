@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { RaizLink } from "@/components/navigation/raiz-link";
 
 const pillars = [
   {
@@ -39,18 +39,20 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <Link
+                  <RaizLink
                     href="/register"
+                    transitionType="soft-focus"
                     className="koru-primary-button px-6 py-3 text-sm font-semibold"
                   >
                     Criar conta
-                  </Link>
-                  <Link
+                  </RaizLink>
+                  <RaizLink
                     href="/login"
+                    transitionType="fade-flow"
                     className="koru-secondary-button border border-white/12 bg-white/8 px-6 py-3 text-sm font-semibold text-white"
                   >
                     Entrar
-                  </Link>
+                  </RaizLink>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
@@ -117,8 +119,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Link
+                  <RaizLink
                     href="/dashboard"
+                    transitionType="page-curl"
                     className="pulse-ring rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_16px_34px_rgba(42,98,143,0.06)] transition hover:-translate-y-1"
                   >
                     <p className="text-xs uppercase tracking-[0.2em] text-primary">
@@ -127,9 +130,10 @@ export default function HomePage() {
                     <h3 className="mt-3 text-xl font-semibold text-text_dark">
                       Veja a raiz do progresso
                     </h3>
-                  </Link>
-                  <Link
+                  </RaizLink>
+                  <RaizLink
                     href="/studyhub/subjects"
+                    transitionType="page-curl"
                     className="pulse-ring rounded-[1.7rem] border border-slate-200 bg-white p-5 shadow-[0_16px_34px_rgba(42,98,143,0.06)] transition hover:-translate-y-1"
                   >
                     <p className="text-xs uppercase tracking-[0.2em] text-secondary">
@@ -138,7 +142,7 @@ export default function HomePage() {
                     <h3 className="mt-3 text-xl font-semibold text-text_dark">
                       Explore a malha de fundamentos
                     </h3>
-                  </Link>
+                  </RaizLink>
                 </div>
               </div>
             </div>

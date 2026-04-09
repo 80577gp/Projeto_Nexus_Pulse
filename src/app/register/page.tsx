@@ -1,12 +1,16 @@
 "use client";
 
+import axios from "axios";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { setTokens } from "@/lib/auth/token-store";
+import { sanitizeWebObject } from "@/lib/security/sanitize";
 
 type Role = "student" | "teacher";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -47,12 +51,9 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${apiBaseUrl}/auth/register/`,
+        sanitizeWebObject({
           email,
           username,
           password,
@@ -60,11 +61,16 @@ export default function RegisterPage() {
           role,
           school_year: role === "student" ? schoolYear : "",
         }),
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await response.json().catch(() => null);
+      const data = response.data;
 
-      if (!response.ok) {
+      if (!response.status || response.status >= 400) {
         const apiError =
           data?.detail ||
           data?.email?.[0] ||
@@ -75,11 +81,21 @@ export default function RegisterPage() {
         throw new Error(apiError);
       }
 
-      router.push("/login");
+      setTokens({ access: data?.access ?? null, refresh: data?.refresh ?? null });
+
+      const nextPath = searchParams.get("next");
+      router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/dashboard");
     } catch (submitError) {
       setError(
-        submitError instanceof Error
-          ? submitError.message
+        axios.isAxiosError(submitError)
+          ? submitError.response?.data?.detail ||
+            submitError.response?.data?.email?.[0] ||
+            submitError.response?.data?.username?.[0] ||
+            submitError.response?.data?.password?.[0] ||
+            submitError.response?.data?.password_confirm?.[0] ||
+            submitError.message
+          : submitError instanceof Error
+            ? submitError.message
           : "Ocorreu um erro inesperado no cadastro."
       );
     } finally {

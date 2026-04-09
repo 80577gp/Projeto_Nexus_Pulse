@@ -1,5 +1,6 @@
 """Security middleware for AI-facing routes."""
 
+import json
 import uuid
 
 from django.http import JsonResponse
@@ -31,11 +32,12 @@ class AgentSecurityProxy:
         )
         request.ai_request_id = request_id
 
+        payload = self._extract_payload(request)
+
         if route_name and (
             "ai-" in route_name
             or route_name in {"token-refresh", "user-login", "user-register", "user-logout"}
         ):
-            payload = getattr(request, "data", None)
             if not validate_ai_intent(payload):
                 return JsonResponse(
                     {"detail": "Intent validation blocked this request."},
@@ -56,4 +58,23 @@ class AgentSecurityProxy:
 
         response = self.get_response(request)
         response["X-KORU-Request-ID"] = request_id
+        response["X-KORU-RAG-Scope"] = f"student:{student_id}" if student_id else "student:anonymous"
         return response
+
+    @staticmethod
+    def _extract_payload(request):
+        """Read JSON bodies defensively before DRF request parsing happens."""
+        if request.method not in {"POST", "PUT", "PATCH"}:
+            return None
+
+        if not request.body:
+            return None
+
+        try:
+            return json.loads(request.body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return None
+
+
+# Backward-compatible alias matching the security audit terminology.
+ShieldMiddleware = AgentSecurityProxy

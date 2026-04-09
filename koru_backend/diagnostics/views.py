@@ -110,7 +110,21 @@ class StudentAnswerCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         """Save the answer for the authenticated student."""
-        serializer.save(student=self.request.user)
+        chosen_choice = serializer.validated_data.get("chosen_choice")
+        text_answer = (serializer.validated_data.get("text_answer") or "").strip()
+        is_correct = bool(chosen_choice and chosen_choice.is_correct)
+
+        if not chosen_choice and text_answer:
+            question = serializer.validated_data["question"]
+            normalized_submission = text_answer.casefold()
+            accepted_answers = [
+                choice.text.strip().casefold()
+                for choice in question.choices.filter(is_correct=True)
+                if choice.text.strip()
+            ]
+            is_correct = normalized_submission in accepted_answers
+
+        serializer.save(student=self.request.user, is_correct=is_correct)
 
 
 class StudentProgressViewSet(viewsets.ModelViewSet):

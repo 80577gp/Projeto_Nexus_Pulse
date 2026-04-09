@@ -1,25 +1,39 @@
-import { MMKV } from "react-native-mmkv";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-const storage = new MMKV({
-  id: "koru-app-storage",
-});
+import { getAppStorage } from "@/services/security/secure-mmkv";
+
 
 type AppStore = {
   hasHydrated: boolean;
+  securityReady: boolean;
   themeMode: "light" | "dark";
   markHydrated: () => void;
+  setSecurityReady: (value: boolean) => void;
   setThemeMode: (themeMode: "light" | "dark") => void;
 };
 
-const mmkvStorage = {
+const appStorageAdapter = {
   setItem: (name: string, value: string) => {
-    storage.set(name, value);
+    try {
+      getAppStorage().set(name, value);
+    } catch {
+      // Storage becomes available after secure bootstrap.
+    }
   },
-  getItem: (name: string) => storage.getString(name) ?? null,
+  getItem: (name: string) => {
+    try {
+      return getAppStorage().getString(name) ?? null;
+    } catch {
+      return null;
+    }
+  },
   removeItem: (name: string) => {
-    storage.delete(name);
+    try {
+      getAppStorage().delete(name);
+    } catch {
+      // Storage becomes available after secure bootstrap.
+    }
   },
 };
 
@@ -27,13 +41,15 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       hasHydrated: false,
+      securityReady: false,
       themeMode: "light",
       markHydrated: () => set({ hasHydrated: true }),
+      setSecurityReady: (securityReady) => set({ securityReady }),
       setThemeMode: (themeMode) => set({ themeMode }),
     }),
     {
       name: "koru-root-store",
-      storage: createJSONStorage(() => mmkvStorage),
+      storage: createJSONStorage(() => appStorageAdapter),
       partialize: (state) => ({
         themeMode: state.themeMode,
       }),

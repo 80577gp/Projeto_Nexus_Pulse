@@ -1,11 +1,15 @@
 "use client";
 
+import axios from "axios";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { setTokens } from "@/lib/auth/token-store";
+import { sanitizeWebObject } from "@/lib/security/sanitize";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,30 +30,30 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/login/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await axios.post(
+        `${apiBaseUrl}/auth/login/`,
+        sanitizeWebObject({ email, password }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = response.data;
 
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.detail || "Nao foi possivel entrar na plataforma.");
+      if (!data?.access) {
+        throw new Error("A autenticacao foi concluida, mas nenhum access token foi retornado.");
       }
 
-      if (!data?.token) {
-        throw new Error("A autenticacao foi concluida, mas nenhum token foi retornado.");
-      }
-
-      localStorage.setItem("authToken", data.token);
-      router.push("/dashboard");
+      setTokens({ access: data.access, refresh: data.refresh ?? null });
+      const nextPath = searchParams.get("next");
+      router.push(nextPath && nextPath.startsWith("/") ? nextPath : "/dashboard");
     } catch (submitError) {
       setError(
-        submitError instanceof Error
-          ? submitError.message
+        axios.isAxiosError(submitError)
+          ? submitError.response?.data?.detail || submitError.message
+          : submitError instanceof Error
+            ? submitError.message
           : "Ocorreu um erro inesperado no login."
       );
     } finally {
@@ -125,7 +129,7 @@ export default function LoginPage() {
                     )}
                   </button>
                   <Link
-                    href="/register"
+                    href={searchParams.get("next") ? `/register?next=${encodeURIComponent(searchParams.get("next") as string)}` : "/register"}
                     className="text-sm font-semibold text-primary transition hover:text-accent"
                   >
                     Ainda nao tem conta? Criar agora

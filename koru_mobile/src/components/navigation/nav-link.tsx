@@ -1,8 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link, usePathname } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Pressable, Text } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import type { NavItem } from "@/navigation/nav-items";
+
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type NavLinkProps = {
   item: NavItem;
@@ -12,10 +21,26 @@ type NavLinkProps = {
 export function NavLink({ item, compact = false }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === item.href;
+  const pressProgress = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { perspective: 900 },
+      { scale: 1 - pressProgress.value * 0.03 },
+      { rotateY: `${pressProgress.value * 9}deg` },
+    ],
+  }));
 
   return (
     <Link href={item.href} asChild>
-      <Pressable
+      <AnimatedPressable
+        onPressIn={async () => {
+          pressProgress.value = withTiming(1, { duration: 140 });
+          await Haptics.selectionAsync().catch(() => null);
+        }}
+        onPressOut={() => {
+          pressProgress.value = withTiming(0, { duration: 220 });
+        }}
         className={[
           "rounded-[22px] border px-4 py-3",
           compact ? "min-w-[72px] items-center justify-center px-3 py-2.5" : "flex-row items-center gap-3",
@@ -24,14 +49,17 @@ export function NavLink({ item, compact = false }: NavLinkProps) {
             : "border-primary/8 bg-surface/70",
         ].join(" ")}
         style={
-          isActive
-            ? {
-                shadowColor: "#8A9A5B",
-                shadowOpacity: 0.18,
-                shadowRadius: 20,
-                shadowOffset: { width: 0, height: 6 },
-              }
-            : undefined
+          [
+            animatedStyle,
+            isActive
+              ? {
+                  shadowColor: "#8A9A5B",
+                  shadowOpacity: 0.18,
+                  shadowRadius: 20,
+                  shadowOffset: { width: 0, height: 6 },
+                }
+              : undefined,
+          ]
         }
       >
         <Ionicons
@@ -47,7 +75,7 @@ export function NavLink({ item, compact = false }: NavLinkProps) {
         >
           {item.label}
         </Text>
-      </Pressable>
+      </AnimatedPressable>
     </Link>
   );
 }
